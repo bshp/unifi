@@ -1,0 +1,37 @@
+#!/bin/bash
+    
+APP_VOLS="/opt/data";
+    
+function app_shutdown()
+{
+    /usr/bin/java -jar ${APP_HOME}/lib/ace.jar stop
+}
+    
+function app_reload()
+{
+    app_shutdown;
+    app_start;
+}
+    
+function app_start()
+{
+    /usr/bin/java -Dlog4j2.formatMsgNoLookups=true \
+      -Dunifi.datadir=/opt/data \
+      -Dfile.encoding=UTF-8 \
+      -Djava.awt.headless=true \
+      -Dapple.awt.UIElement=true \
+      -XX:+UseParallelGC \
+      -XX:+ExitOnOutOfMemoryError \
+      -XX:+CrashOnOutOfMemoryError \
+      --add-opens java.base/java.lang=ALL-UNNAMED \
+      --add-opens java.base/java.time=ALL-UNNAMED \
+      --add-opens java.base/sun.security.util=ALL-UNNAMED \
+      --add-opens java.base/java.io=ALL-UNNAMED \
+      --add-opens java.rmi/sun.rmi.transport=ALL-UNNAMED \
+      -jar ${APP_HOME}/lib/ace.jar start
+}
+    
+function app_certs()
+{
+    ${OCIE_LIB}/cacerts;
+}
