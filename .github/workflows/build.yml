@@ -25,6 +25,8 @@ jobs:
         docker build . --pull --build-arg OCIE_VERSION=22.04 --build-arg UNIFI_VERSION=${{ env.UNIFI_VERSION }} --tag bshp/unifi:latest --no-cache
     - name: Push 22.04
       run: |
-        docker tag bshp/unifi:latest bshp/unifi:${{ env.UNIFI_VERSION%%-*}}
+        TAG=${{ env.UNIFI_VERSION}}
+        TAG=${TAG%%-*}
+        docker tag bshp/unifi:latest bshp/unifi:$TAG
         docker push bshp/unifi:latest
-        docker push bshp/unifi:${{ env.UNIFI_VERSION%%-*}}
+        docker push bshp/unifi:$TAG
