@@ -39,4 +39,4 @@ EOD
     
 COPY --chown=root:root --chmod=0755 ./src/ ./
     
-ENTRYPOINT ["/usr/sbin/ociectl", "--run"]
+CMD ["/bin/bash"]
