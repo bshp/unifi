@@ -18,11 +18,13 @@ jobs:
       run: |
         docker login -u $DOCKER_USER -p $DOCKER_TOKEN
     - name: Build 22.04
+    - name: Set Version
       run: |
-        UNIFI_VERSION=$(wget --quiet --no-cookies https://dl.ui.com/unifi/debian/dists/stable/ubiquiti/binary-amd64/Packages -O - | sed -n 's/Version: //p')
-        docker build . --pull --build-arg OCIE_VERSION=22.04 --build-arg UNIFI_VERSION=$UNIFI_VERSION --tag bshp/unifi:latest --no-cache
+        echo "UNIFI_VERSION=$(wget --quiet --no-cookies https://dl.ui.com/unifi/debian/dists/stable/ubiquiti/binary-amd64/Packages -O - | sed -n 's/Version: //p')" >> $GITHUB_ENV
+      run: |
+        docker build . --pull --build-arg OCIE_VERSION=22.04 --build-arg UNIFI_VERSION=${{ env.UNIFI_VERSION }} --tag bshp/unifi:latest --no-cache
     - name: Push 22.04
       run: |
-        docker tag bshp/unifi:latest bshp/unifi:$UNIFI_VERSION
+        docker tag bshp/unifi:latest bshp/unifi:${{ env.UNIFI_VERSION }}
         docker push bshp/unifi:latest
-        docker push bshp/unifi:$UNIFI_VERSION
+        docker push bshp/unifi:${{ env.UNIFI_VERSION }}
