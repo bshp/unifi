@@ -17,7 +17,7 @@ ENV OCIE_CONFIG=/etc/unifi \
     UNIFI_VERSION=${UNIFI_VERSION}
     
 RUN <<"EOD" bash
-    set -eux;
+    set -eu;
     # Source environment for OS_CODENAME
     . /etc/environment;
     # Add MongoDB Repo
