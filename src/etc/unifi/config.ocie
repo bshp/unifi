@@ -35,3 +35,28 @@ function app_certs()
 {
     ${OCIE_LIB}/cacerts;
 }
+
+function app_keys()
+{
+    if [[ ! -z "${CERT_PFX_FILE}" ]];then
+        if [[ -f "${CERT_PFX_FILE}" ]];then
+            storepass="${CERT_PFX_SECRET:-}"
+            if [[ ! -z "${CERT_PFX_SECRET}" ]];then
+                storepass=" -srcstorepass ${CERT_PFX_SECRET} ";
+            fi;
+            echo "Ocie: Attempting to import application's certificate, PFX: [ ${CERT_PFX_FILE} ], Hostname: [ ${HOSTNAME} ], KeyStore: [ ${APP_DATA}/keystore ]";
+            result=$(/usr/bin/keytool -importkeystore -noprompt \
+                -srcalias "${HOSTNAME}" \
+                -srckeystore "${CERT_PFX_FILE}" "$storepass" -srcstoretype pkcs12 \
+                -destkeystore "${APP_DATA}"/keystore \
+                -deststoretype jks \
+                -destalias unifi \
+                -deststorepass aircontrolenterprise | echo "$?")
+              if [[ "$result" == 0 ]];then
+                echo "Ocie: PFX was successfully imported";
+              fi;
+        else
+            echo "Ocie: Unable to read PFX [ ${CERT_PFX_FILE} ], certificate will NOT be imported";
+        fi;
+    fi;
+}

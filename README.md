@@ -32,9 +32,12 @@ zip
     
 see [Ocie Environment](https://github.com/bshp/ocie/blob/main/Environment.md) for more info
     
+#### Ports
+see [Unifi Ports Ingress](https://help.ui.com/hc/en-us/articles/218506997-UniFi-Network-Required-Ports-Reference)
+    
 #### Direct:  
 ````
-docker run -d bshp/unifi:latest
+docker run -v unifi_data:/opt/data -p 8080:8080 -p 8443:8443 -d bshp/unifi:latest
 ````
 #### Custom:  
 Add at end of your entrypoint script either of:  
