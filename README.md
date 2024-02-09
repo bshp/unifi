@@ -2,9 +2,9 @@
     
 A work in progress to get Unifi Network Console production ready in docker. Most of this image is ready, testing has not shown any errors.
     
-Unifi data is stored in /opt/data and you will need to map a volume to this location, e.get
+This build does not define a static VOLUME, Unifi data is stored in /opt/data and you will need to map a volume to this location for persistance, e.g    
 ````
-my_volume:/opt/data
+-v unifi_data:/opt/data
 ````
     
 #### Base OS:    
@@ -18,16 +18,21 @@ ca-certificates
 curl 
 gnupg 
 jq 
-libcap2 
 logrotate 
-mongodb-org 
-openjdk-17-jre-headless
+openjdk-17-jre-headless 
 openssl 
 tzdata 
 unzip 
 wget 
 zip 
 ````
+    
+#### External Packages
+    
+mongodb-org: https://repo.mongodb.org/apt/ubuntu    
+libssl1.1: http://security.ubuntu.com/ubuntu/pool/main/o/openssl    
+unifi: https://dl.ui.com/unifi/debian/dists/stable/ubiquiti/binary-amd64/Packages
+    
 #### Environment Variables:    
     
 see [Ocie Environment](https://github.com/bshp/ocie/blob/main/Environment.md) for more info
