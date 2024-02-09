@@ -15,20 +15,21 @@ function app_reload()
     
 function app_start()
 {
-    /usr/bin/java -Dlog4j2.formatMsgNoLookups=true \
-      -Dunifi.datadir=/opt/data \
+    START_PARAMS="-Dlog4j2.formatMsgNoLookups=true \
       -Dfile.encoding=UTF-8 \
       -Djava.awt.headless=true \
       -Dapple.awt.UIElement=true \
       -XX:+UseParallelGC \
       -XX:+ExitOnOutOfMemoryError \
       -XX:+CrashOnOutOfMemoryError \
+      ${APP_PARAMS}";
+    nohup /usr/bin/java $START_PARAMS \
       --add-opens java.base/java.lang=ALL-UNNAMED \
       --add-opens java.base/java.time=ALL-UNNAMED \
       --add-opens java.base/sun.security.util=ALL-UNNAMED \
       --add-opens java.base/java.io=ALL-UNNAMED \
       --add-opens java.rmi/sun.rmi.transport=ALL-UNNAMED \
-      -jar ${APP_HOME}/lib/ace.jar start
+      -jar ${APP_HOME}/lib/ace.jar start >/dev/null 2>&1
 }
     
 function app_certs()
@@ -44,7 +45,7 @@ function app_keys()
             if [[ ! -z "${CERT_PFX_SECRET}" ]];then
                 storepass=" -srcstorepass ${CERT_PFX_SECRET} ";
             fi;
-            echo "Ocie: Attempting to import application's certificate, PFX: [ ${CERT_PFX_FILE} ], Hostname: [ ${HOSTNAME} ], KeyStore: [ ${APP_DATA}/keystore ]";
+            echo "Ocie: Attempting to import application's certificate, PFX: [ ${CERT_PFX_FILE} ], KeyStore: [ ${APP_DATA}/keystore ]";
             result=$(/usr/bin/keytool -importkeystore -noprompt \
                 -srcalias "${HOSTNAME}" \
                 -srckeystore "${CERT_PFX_FILE}" "$storepass" -srcstoretype pkcs12 \
