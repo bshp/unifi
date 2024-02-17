@@ -1,10 +1,17 @@
 #!/bin/bash
     
-APP_VOLS="/opt/data";
-    
 function app_shutdown()
 {
-    /usr/bin/java -jar ${APP_HOME}/lib/ace.jar stop
+    /usr/bin/java -jar ${APP_HOME}/lib/ace.jar stop >/dev/null 2>&1;
+    sleep 5;
+    local running=$(ps -f | grep ${APP_HOME}/lib/ace.jar);
+    if [[ ! -z "$running" ]];then
+        pkill -f ${APP_HOME}/lib/ace.jar || true;
+        sleep 2;
+    fi;
+    if [[ -f "${APP_DATA}/db/mongod.lock" ]];then
+        mongo localhost:27117 --eval "db.getSiblingDB('admin').shutdownServer()" >/dev/null 2>&1 || true;
+    fi;
 }
     
 function app_reload()
@@ -15,21 +22,29 @@ function app_reload()
     
 function app_start()
 {
-    START_PARAMS="-Dlog4j2.formatMsgNoLookups=true \
+    local jvm_params=${APP_PARAMS:-"-Xmx1024M -XX:+UseParallelGC"};
+    local unifi_params="-Dlog4j2.formatMsgNoLookups=true \
       -Dfile.encoding=UTF-8 \
       -Djava.awt.headless=true \
       -Dapple.awt.UIElement=true \
+      -Dunifi.datadir=${APP_DATA} \
+      -Dunifi.rundir=/var/run/unifi \
+      -Dunifi.logdir=/var/log/unifi \
+      -XX:ErrorFile=/var/log/unifi/hs_err_pid%p.log \
       -XX:+UseParallelGC \
       -XX:+ExitOnOutOfMemoryError \
       -XX:+CrashOnOutOfMemoryError \
-      ${APP_PARAMS}";
-    nohup /usr/bin/java $START_PARAMS \
-      --add-opens java.base/java.lang=ALL-UNNAMED \
-      --add-opens java.base/java.time=ALL-UNNAMED \
-      --add-opens java.base/sun.security.util=ALL-UNNAMED \
-      --add-opens java.base/java.io=ALL-UNNAMED \
-      --add-opens java.rmi/sun.rmi.transport=ALL-UNNAMED \
-      -jar ${APP_HOME}/lib/ace.jar start >/dev/null 2>&1
+      ${jvm_params}";
+    nohup /usr/bin/java \
+        $unifi_params \
+        --add-opens java.base/java.lang=ALL-UNNAMED \
+        --add-opens java.base/java.time=ALL-UNNAMED \
+        --add-opens java.base/sun.security.util=ALL-UNNAMED \
+        --add-opens java.base/java.io=ALL-UNNAMED \
+        --add-opens java.rmi/sun.rmi.transport=ALL-UNNAMED \
+        -jar ${APP_HOME}/lib/ace.jar start >/dev/null 2>&1 &
+    sleep 5;
+    echo "$!";
 }
     
 function app_certs()
@@ -41,12 +56,12 @@ function app_keys()
 {
     if [[ ! -z "${CERT_PFX_FILE}" ]];then
         if [[ -f "${CERT_PFX_FILE}" ]];then
-            storepass="${CERT_PFX_SECRET:-}"
+            local storepass="${CERT_PFX_SECRET:-}"
             if [[ ! -z "${CERT_PFX_SECRET}" ]];then
-                storepass=" -srcstorepass ${CERT_PFX_SECRET} ";
+               local storepass=" -srcstorepass ${CERT_PFX_SECRET} ";
             fi;
             echo "Ocie: Attempting to import application's certificate, PFX: [ ${CERT_PFX_FILE} ], KeyStore: [ ${APP_DATA}/keystore ]";
-            result=$(/usr/bin/keytool -importkeystore -noprompt \
+            local result=$(/usr/bin/keytool -importkeystore -noprompt \
                 -srcalias "${HOSTNAME}" \
                 -srckeystore "${CERT_PFX_FILE}" "$storepass" -srcstoretype pkcs12 \
                 -destkeystore "${APP_DATA}"/keystore \

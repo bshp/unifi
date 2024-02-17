@@ -13,6 +13,7 @@ ENV OCIE_CONFIG=/etc/unifi \
     APP_OWNER="root" \
     APP_DATA=/opt/data \
     APP_HOME=/usr/lib/unifi \
+    APP_VOLS="/opt/data" \
     JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 \
     UNIFI_VERSION=${UNIFI_VERSION}
     
