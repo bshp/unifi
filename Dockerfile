@@ -23,33 +23,24 @@ RUN <<"EOD" bash
     # Temp Storage
     build="$(mktemp -d)";
     # MongoDB Repo
-    if [[ "${OS_CODENAME}" == "jammy" ]];then
-        echo "Ocie: Detected [ jammy:22.04 ], using [ focal:20.04 ] for some packages since Unifi requires MongoDB 4.4.x";
-        echo "Ocie: The following packages will be downloaded from:";
-        echo "Package: libssl1.1, URL: http://security.ubuntu.com/ubuntu/pool/main/o/openssl";
-        echo "Package: mongodb, : URL: https://repo.mongodb.org/apt/ubuntu/dists/focal";
-    fi;
-    wget --quiet "https://www.mongodb.org/static/pgp/server-4.4.asc" -O- | gpg --dearmor -o /usr/share/keyrings/mongodb.gpg;
-    echo "deb [arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb.gpg] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/4.4 multiverse" \
-        | tee /etc/apt/sources.list.d/mongodb-4.4.list;
+    echo "Package: mongodb, URL: https://repo.mongodb.org/apt/ubuntu/dists/${OS_CODENAME}";
+    wget --quiet --no-cookies "https://www.mongodb.org/static/pgp/server-6.0.asc" -O- | gpg --dearmor -o /usr/share/keyrings/mongodb.gpg;
+    echo "deb [arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb.gpg] https://repo.mongodb.org/apt/ubuntu ${OS_CODENAME}/mongodb-org/6.0 multiverse" \
+        | tee /etc/apt/sources.list.d/mongodb-6.0.list;
     # Unifi Setup
-    install -d -m 0755 -o root -g root ${APP_DATA};
+    install -d -m 0755 -o ${APP_OWNER} -g ${APP_GROUP} ${APP_DATA};
     if [[ -z "${UNIFI_VERSION}" ]];then
         UNIFI_VERSION=$(wget --quiet --no-cookies https://dl.ui.com/unifi/debian/dists/stable/ubiquiti/binary-amd64/Packages -O - | sed -n 's/Version: //p');
     fi;
     # Unifi Installer
-    wget --quiet --no-cookies https://dl.ui.com/unifi/${UNIFI_VERSION%%-*}/unifi_sysvinit_all.deb -O $build/unifi_sysvinit_all.deb;
+    wget --quiet --no-cookies "https://dl.ui.com/unifi/${UNIFI_VERSION%%-*}/unifi_sysvinit_all.deb" -O $build/unifi_sysvinit_all.deb;
     # Package List
-    addpkgs="binutils,mongodb-org,logrotate,openjdk-17-jre-headless,$build/unifi_sysvinit_all.deb";
-    # 22.04 Check
-    if [[ "${OS_CODENAME}" == "jammy" ]];then
-        wget --quiet --no-cookies http://security.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.0g-2ubuntu4_amd64.deb -O $build/libssl1.1_1.1.0g-2ubuntu4_amd64.deb;
-        addpkgs+=",$build/libssl1.1_1.1.0g-2ubuntu4_amd64.deb";
-    fi;
-    ocie --pkg "-add $addpkgs";
+    ocie --pkg "-add binutils,mongodb-org,logrotate,openjdk-17-jre-headless,$build/unifi_sysvinit_all.deb";
     # Recreate ../data to /opt/data
     rm -rf ${APP_HOME}/data;
     ln -s ${APP_DATA} ${APP_HOME}/;
+    # Fix logging, -Dunifi.logdir also needed a trailing slash, e.g /var/log/unifi/
+    chown -R ${APP_OWNER}:${APP_GROUP} /var/log/unifi && chmod -R 0755 /var/log/unifi; 
     # Cleanup image, remove unused directories and files, etc..
     ocie --clean "-base -dirs $build";
     echo "Finished setting up Unifi, Version: ${UNIFI_VERSION%%-*}";

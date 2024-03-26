@@ -10,7 +10,7 @@ function app_shutdown()
         sleep 2;
     fi;
     if [[ -f "${APP_DATA}/db/mongod.lock" ]];then
-        mongo localhost:27117 --eval "db.getSiblingDB('admin').shutdownServer()" >/dev/null 2>&1 || true;
+        mongosh localhost:27117 --eval "db.getSiblingDB('admin').shutdownServer()" >/dev/null 2>&1 || true;
     fi;
 }
     
@@ -29,14 +29,14 @@ function app_start()
       -Dapple.awt.UIElement=true \
       -Dunifi.datadir=${APP_DATA} \
       -Dunifi.rundir=/var/run/unifi \
-      -Dunifi.logdir=/var/log/unifi \
+      -Dunifi.logdir/var/log/unifi/ \
       -XX:ErrorFile=/var/log/unifi/hs_err_pid%p.log \
       -XX:+UseParallelGC \
       -XX:+ExitOnOutOfMemoryError \
       -XX:+CrashOnOutOfMemoryError \
       ${jvm_params}";
     nohup /usr/bin/java \
-        $unifi_params \
+        "$unifi_params" \
         --add-opens java.base/java.lang=ALL-UNNAMED \
         --add-opens java.base/java.time=ALL-UNNAMED \
         --add-opens java.base/sun.security.util=ALL-UNNAMED \

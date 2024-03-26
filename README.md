@@ -1,6 +1,6 @@
 #### Unifi Network Server  
     
-A work in progress to get Unifi Network Console production ready in docker. Most of this image is ready, testing has not shown any errors.
+Unifi Network Console, most of this image is ready, testing has not shown any errors.
     
 This build does not define a static VOLUME, Unifi data is stored in /opt/data and you will need to map a volume to this location for persistance, e.g    
 ````
@@ -30,7 +30,6 @@ zip
 #### External Packages
     
 mongodb-org: https://repo.mongodb.org/apt/ubuntu    
-libssl1.1: http://security.ubuntu.com/ubuntu/pool/main/o/openssl    
 unifi: https://dl.ui.com/unifi/debian/dists/stable/ubiquiti/binary-amd64/Packages
     
 #### Environment Variables:    
@@ -70,6 +69,6 @@ Add at end of your entrypoint script either of:
 OCIE_VERSION = Uses same Ubuntu version semantics, e.g 22.04, 24.04    
 UNIFI_VERSION = Unifi Network Version to build, if omitted, the latest available will be used
 ````
-docker build . --pull --build-arg OCIE_VERSION=22.04 --build-arg UNIFI_VERSION=7.5.2 --tag YOUR_TAG
+docker build . --pull --build-arg OCIE_VERSION=22.04 --build-arg UNIFI_VERSION=8.1.113 --tag YOUR_TAG
 ````
     

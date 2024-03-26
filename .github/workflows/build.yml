@@ -20,10 +20,10 @@ jobs:
     - name: Set Version
       run: |
         echo "UNIFI_VERSION=$(wget --quiet --no-cookies https://dl.ui.com/unifi/debian/dists/stable/ubiquiti/binary-amd64/Packages -O - | sed -n 's/Version: //p')" >> $GITHUB_ENV
-    - name: Build 20.04
+    - name: Build 22.04
       run: |
-        docker build . --pull --build-arg OCIE_VERSION=20.04 --build-arg UNIFI_VERSION=${{ env.UNIFI_VERSION }} --tag bshp/unifi:latest --no-cache
-    - name: Push 20.04
+        docker build . --pull --build-arg OCIE_VERSION=22.04 --build-arg UNIFI_VERSION=${{ env.UNIFI_VERSION }} --tag bshp/unifi:latest --no-cache
+    - name: Push 22.04
       run: |
         TAG=${{ env.UNIFI_VERSION}}
         TAG=${TAG%%-*}
